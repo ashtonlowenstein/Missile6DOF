@@ -27,7 +27,7 @@ struct LoadSummary {
 class MissileDynamics {
 public:
     MissileDynamics(
-        std::unique_ptr<IGravityModel> grav,
+        std::shared_ptr<IGravityModel> grav,
         std::unique_ptr<IAtmosphereModel> atmosphere_model,
         std::unique_ptr<IAeroModel> aero_model,
         std::unique_ptr<IPropulsionModel> propulsion_model,
@@ -56,7 +56,7 @@ public:
 private:
     [[nodiscard]] FlightCondition makeFlightCondition(double t, const State& state) const;
 
-    std::unique_ptr<IGravityModel> gravity_;
+    std::shared_ptr<IGravityModel> gravity_;
     std::unique_ptr<IAtmosphereModel> atmosphere_;
     std::unique_ptr<IAeroModel> aero_;
     std::unique_ptr<IPropulsionModel> propulsion_;

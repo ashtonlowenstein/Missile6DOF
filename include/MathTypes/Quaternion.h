@@ -5,6 +5,7 @@
 #ifndef MISSILE6DOF_QUATERNION_H
 #define MISSILE6DOF_QUATERNION_H
 #include "Vec3.h"
+#include "MatrixXd.h"
 
 
 class Quaternion {
@@ -35,5 +36,6 @@ public:
 
 Vec3 toVector(const Quaternion& q);
 Quaternion toQuaternion(const Vec3& v);
+Mat<3,3> toRotationMatrix(Quaternion& q);
 
 #endif //MISSILE6DOF_QUATERNION_H

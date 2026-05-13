@@ -15,7 +15,7 @@ class IGravityModel {
 public:
     virtual ~IGravityModel() = default;
 
-    [[nodiscard]] virtual GravityOutput compute(const State& state) const = 0; // returns acceleration
+    [[nodiscard]] virtual GravityOutput compute(const Vec3& pos_inertial) const = 0; // returns acceleration
 };
 
 #endif //MISSILE6DOF_GRAVITYMODEL_H

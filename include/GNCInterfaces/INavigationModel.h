@@ -10,7 +10,17 @@
 class INavigationModel {
 public:
     virtual ~INavigationModel() = default;
-    [[nodiscard]] virtual NavigationState estimate(double t, const State& state) const = 0;
+
+    [[nodiscard]] virtual NavigationState initializeFromTruth(const State& truth) const = 0;
+
+    [[nodiscard]] virtual NavigationState estimate(
+        double t,
+        double dt,
+        const State& state,
+        const NavigationState& prev,
+        const ImuMeasurement& sensors,
+        const std::optional<GpsMeasurement>& gps
+    ) const = 0;
 };
 
 #endif //MISSILE6DOF_INAVIGATIONMODEL_H

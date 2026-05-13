@@ -19,6 +19,7 @@ public:
         const NavigationState& nav,
         const GuidanceCommand& guid)
     const override {
+
         const Quaternion& q = nav.q_BI;
         const Quaternion& q_cmd = guid.q_cmd_BI;
 

@@ -9,7 +9,7 @@
 
 class ZeroGravityModel : public IGravityModel {
 public:
-    GravityOutput compute(const State& state) const override {
+    [[nodiscard]] GravityOutput compute(const Vec3& pos_inertial) const override {
         GravityOutput output{};
         output.accel_inertial = {0.0, 0.0, 0.0};
         return output;

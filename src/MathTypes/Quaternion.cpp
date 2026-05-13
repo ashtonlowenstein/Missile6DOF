@@ -94,3 +94,14 @@ Vec3 Quaternion::rotateVector(const Vec3& v) const {
     }
     return v;
 }
+
+Mat<3,3> toRotationMatrix(Quaternion& q) {
+    Mat<3,3> R{};
+    q.normalize();
+
+    R(0,0) = 1.0 - 2.0 * (q.y * q.y + q.z * q.z); R(0,1) = 2.0 * (q.x * q.y - q.z * q.w); R(0,2) = 2.0 * (q.x * q.z + q.y * q.w);
+    R(1,0) = 2.0 * (q.x * q.y + q.z * q.w); R(1,1) = 1.0 - 2.0 * (q.x * q.x + q.z * q.z); R(1,2) = 2.0 * (q.y * q.z - q.x * q.w);
+    R(2,0) = 2.0 * (q.x * q.z - q.y * q.w); R(2,1) = 2.0 * (q.y * q.z + q.x * q.w); R(2,2) = 1.0 - 2.0 * (q.x * q.x + q.y * q.y);
+
+    return R;
+}

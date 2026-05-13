@@ -10,7 +10,7 @@
 #include "../../include/ModelInterfaces/IThrustModel.h"
 
 MissileDynamics::MissileDynamics(
-    std::unique_ptr<IGravityModel> grav,
+    std::shared_ptr<IGravityModel> grav,
     std::unique_ptr<IAtmosphereModel> atmosphere_model,
     std::unique_ptr<IAeroModel> aero_model,
     std::unique_ptr<IPropulsionModel> propulsion_model,

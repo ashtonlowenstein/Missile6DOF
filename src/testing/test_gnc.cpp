@@ -19,6 +19,7 @@
 #include "../include/GNCImplementations/GuidanceAttitudeHold.h"
 #include "../include/GNCImplementations/NavigationTruthModel.h"
 #include "../include/GNCImplementations/PDAttitudeController.h"
+#include "sensors/IdealImuModel.h"
 
 double attitudeErrorNorm(const Quaternion& q_current_BI,
                          const Quaternion& q_cmd_BI)
@@ -134,6 +135,8 @@ int main() {
 
     auto actuator_model = std::make_unique<SimpleActuatorModel>(actuator_params);
 
+    auto sensors = std::make_unique<IdealImuModel>();
+
     // Dynamics
     MissileDynamics dynamics(
         std::move(gravity_model),
@@ -146,6 +149,7 @@ int main() {
 
     const Simulator sim(
         dynamics,
+        std::move(sensors),
         std::move(guidance),
         std::move(navigation),
         std::move(controller),

@@ -7,15 +7,24 @@
 
 #include "../GNCInterfaces/INavigationModel.h"
 
-class NavigationTruthModel : public INavigationModel {
+class NavigationTruthModel : public INavigationModel{
 public:
-    [[nodiscard]] NavigationState estimate(double, const State& state) const override {
-        return {
-            state.pos_inertial,
-            state.vel_inertial,
-            state.q_BI,
-            state.omega_body
-        };
+    [[nodiscard]] NavigationState initializeFromTruth(const State& truth) const override {
+        return {truth.pos_inertial, truth.vel_inertial, truth.q_BI, truth.omega_body};
+    }
+    [[nodiscard]] NavigationState estimate(
+        double t,
+        double dt,
+        const State& state,
+        const NavigationState& prev,
+        const ImuMeasurement& sensors,
+        const std::optional<GpsMeasurement>& gps
+    ) const override {
+        (void)t; (void)dt; (void) prev; (void)sensors; (void)gps;
+        return  {state.pos_inertial,
+                    state.vel_inertial,
+                    state.q_BI,
+                    state.omega_body};
     }
 };
 

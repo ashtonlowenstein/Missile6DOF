@@ -12,11 +12,15 @@
 #include "../GNCInterfaces/IControllerModel.h"
 #include "../GNCInterfaces/IGuidanceModel.h"
 #include "../GNCInterfaces/INavigationModel.h"
+#include "../sensors/IImuModel.h"
+#include "sensors/IGpsModel.h"
 
 class Simulator {
 public:
     Simulator(
         const MissileDynamics& dynamics,
+        std::unique_ptr<IImuModel> imu,
+        std::unique_ptr<IGpsModel> gps,
         std::unique_ptr<IGuidanceModel> guidance,
         std::unique_ptr<INavigationModel> navigation,
         std::unique_ptr<IControllerModel> controller,
@@ -31,18 +35,22 @@ public:
 
 private:
     const MissileDynamics& dynamics_;
+    std::unique_ptr<IImuModel> imu_;
+    std::unique_ptr<IGpsModel> gps_;
     std::unique_ptr<IGuidanceModel> guidance_;
     std::unique_ptr<INavigationModel> navigation_;
     std::unique_ptr<IControllerModel> controller_;
     double dt_;
     double t_end_;
 
-    LogRecord fillLogRecord(
+    [[nodiscard]] LogRecord fillLogRecord(
         double t,
         const State& state,
         const Derivative& ds,
         const ControlCommand& cmd,
-        const DynamicsContext& ctx) const;
+        const DynamicsContext& ctx,
+        const NavigationState& nav,
+        const ImuMeasurement& measurement) const;
 };
 
 

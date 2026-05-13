@@ -7,6 +7,8 @@ A modular 6-DOF rigid-body flight simulator written in C++, featuring:
 - actuator dynamics with rate limits
 - variable mass and inertia
 - gravity modeling
+- aerodynamics modeling
+- sensor modeling and state estimation
 - closed-loop attitude control (GNC stack)
 
 ## Features
@@ -14,10 +16,11 @@ A modular 6-DOF rigid-body flight simulator written in C++, featuring:
 - modular force/moment models (gravity, aero, propulsion)
 - Runge-Kutta 4 integrator
 - thrust vector control with gimbal actuators
-- simple GNC stack:
-    - truth navigation
+- GNC stack:
+    - EKF & dead reckoning navigation
     - attitude hold guidance
     - quaternion PD controller
+- accelerometer and gyroscope model
 
 ## Project Structure
 - `sim_core`: simulation and GNC library
@@ -26,13 +29,11 @@ A modular 6-DOF rigid-body flight simulator written in C++, featuring:
 - `docs/`: design and validation notes
 
 ## Example Scenarios
-- `propulsion_only`: thrust validation
-- `tvc_pitch_yaw`: off-axis thrust tests
+- `IMU_simple_thrust`: dead reckoning & thrust validation
+- `EKF_inertial_coords`: EKF validation
 - `attitude_hold`: closed-loop attitude stabilization
 
 ## Future Work
-- aerodynamic model integration
-- sensor modeling and EKF
 - trajectory guidance
 - improved control allocation
 

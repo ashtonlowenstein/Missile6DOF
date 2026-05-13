@@ -24,7 +24,7 @@ const {
     TotalLoads loads{};
 
     // Gravity
-    loads.gravity.force_inertial = mp.mass * gravity_model_.compute(state).accel_inertial;
+    loads.gravity.force_inertial = mp.mass * gravity_model_.compute(state.pos_inertial).accel_inertial;
     loads.gravity.force_body = state.q_BI.conjugate().rotateVector(loads.gravity.force_inertial);
 
     loads.total_force_body += loads.gravity.force_body;
@@ -46,7 +46,7 @@ const {
 
     // update total inertial force
     loads.total_force_inertial = state.q_BI.rotateVector(loads.total_force_body);
-    loads.total_force_inertial += loads.gravity.force_inertial;
+    //loads.total_force_inertial += loads.gravity.force_inertial;
 
     return loads;
 }

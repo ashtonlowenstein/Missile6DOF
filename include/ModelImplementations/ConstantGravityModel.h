@@ -9,7 +9,8 @@
 
 class ConstantGravityModel : public IGravityModel {
 public:
-    [[nodiscard]] GravityOutput compute(const State& state) const override {
+    [[nodiscard]] GravityOutput compute(const Vec3& pos_inertial) const override {
+        (void) pos_inertial;
         return {Vec3{0.0, 0.0, -9.8}};
     }
 };

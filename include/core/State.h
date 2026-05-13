@@ -7,6 +7,7 @@
 
 #include "../MathTypes/Mat3.h"
 #include "../MathTypes/Quaternion.h"
+#include "../MathTypes/MatrixXd.h"
 
 
 struct PropulsionActuatorState {
@@ -44,6 +45,24 @@ struct NavigationState {
     Vec3 vel_inertial{};
     Quaternion q_BI{};
     Vec3 omega_body{};
+
+    Vec3 accel_bias_body{};
+    Vec3 gyro_bias_body{};
+
+    Mat<9,9> P{};
+};
+
+struct EkfNavigationState {
+    Vec3 pos_inertial;
+    Vec3 vel_inertial;
+    Quaternion q_BI;        // use propagated/known attitude for now
+    Vec3 accel_bias_body;
+    Mat<9, 9> P;
+};
+
+struct GpsMeasurement {
+    Vec3 pos_inertial{};
+    bool valid{false};
 };
 
 struct GuidanceCommand {
@@ -142,6 +161,11 @@ struct FlightCondition {
     double qbar{0.0};
 
     AtmosphereState atmosphere{};
+};
+
+struct ImuMeasurement {
+    Vec3 gyro_body{};   // rad/s
+    Vec3 accel_body{};  // m/s^2
 };
 
 struct DynamicsContext {

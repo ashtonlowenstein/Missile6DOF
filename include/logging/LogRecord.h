@@ -18,6 +18,11 @@ struct LogRecord {
 
     double mass{0.0};
 
+    Vec3 pos_inertial_estimate{};
+    Vec3 vel_inertial_estimate{};
+    Quaternion q_bi_estimate{};
+    Vec3 omega_body_estimate{};
+
     Quaternion q_cmd{};
     double q_error_norm{0.0};
 
@@ -28,6 +33,10 @@ struct LogRecord {
     double gimbal_pitch_actual{0.0};
     double gimbal_yaw_cmd{0.0};
     double gimbal_yaw_actual{0.0};
+
+    // sensor reading
+    Vec3 accel_body{};
+    Vec3 accel_body_bias{};
 
     // propulsion
     Vec3 thrust_force_body{};
