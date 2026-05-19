@@ -86,6 +86,10 @@ Quaternion toQuaternion(const Vec3& v) {
     return Quaternion{0.0, v.x, v.y, v.z};
 }
 
+double dot(const Quaternion& q1, const Quaternion& q2) {
+    return q1.w * q2.w + q1.x * q2.x + q1.y * q2.y + q1.z * q2.z;
+}
+
 Vec3 Quaternion::rotateVector(const Vec3& v) const {
     if (const double n = norm(); n > 0.0) {
         const Quaternion v_q = toQuaternion(v);
@@ -93,15 +97,4 @@ Vec3 Quaternion::rotateVector(const Vec3& v) const {
         return toVector(q_rot * v_q * q_rot.conjugate());
     }
     return v;
-}
-
-Mat<3,3> toRotationMatrix(Quaternion& q) {
-    Mat<3,3> R{};
-    q.normalize();
-
-    R(0,0) = 1.0 - 2.0 * (q.y * q.y + q.z * q.z); R(0,1) = 2.0 * (q.x * q.y - q.z * q.w); R(0,2) = 2.0 * (q.x * q.z + q.y * q.w);
-    R(1,0) = 2.0 * (q.x * q.y + q.z * q.w); R(1,1) = 1.0 - 2.0 * (q.x * q.x + q.z * q.z); R(1,2) = 2.0 * (q.y * q.z - q.x * q.w);
-    R(2,0) = 2.0 * (q.x * q.z - q.y * q.w); R(2,1) = 2.0 * (q.y * q.z + q.x * q.w); R(2,2) = 1.0 - 2.0 * (q.x * q.x + q.y * q.y);
-
-    return R;
 }

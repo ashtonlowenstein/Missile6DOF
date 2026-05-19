@@ -7,14 +7,19 @@
 #include "GNCInterfaces/INavigationModel.h"
 #include "ModelInterfaces/IGravityModel.h"
 #include "MathTypes/MatrixXd.h"
+#include "MathTypes/RotationConversions.h"
 
 class EkfNavigation : public INavigationModel {
 public:
     EkfNavigation(
         std::shared_ptr<IGravityModel> gravity,
         const Mat<9,9>& Q,
-        const Mat<3,3>& R_gps
-    ) : gravity_(std::move(gravity)), Q_(Q), R_gps_(R_gps) {
+        const Mat<3,3>& R_gps,
+        double max_thrust,
+        double throttle_time_const,
+        double dry_mass
+    ) : gravity_(std::move(gravity)), Q_(Q), R_gps_(R_gps), max_thrust_(max_thrust),
+        throttle_time_const_(throttle_time_const), dry_mass_(dry_mass) {
         if (!gravity_) {
             throw std::invalid_argument("EkfNavigation requires a gravity model");
         }
@@ -26,6 +31,7 @@ public:
         output.vel_inertial = truth.vel_inertial;
         output.q_BI = truth.q_BI;
         output.omega_body = truth.omega_body;
+        output.mass_est = truth.mass;
 
         for (std::size_t i = 0; i < 3; ++i) {
             output.P(i,i) = 1.0;
@@ -132,6 +138,7 @@ public:
         const State& state,
         const NavigationState& prev,
         const ImuMeasurement& sensors,
+        const ControlCommand& last_cmd,
         const std::optional<GpsMeasurement>& gps
     ) const override {
         (void)t; (void)state;
@@ -142,6 +149,22 @@ public:
             x_hat = correctGPS(x_hat, gps.value());
         }
 
+        double throttle_cmd_sat = std::clamp(last_cmd.throttle_cmd, 0.0, 1.0);
+
+        double throttle_dot =
+            (throttle_cmd_sat - prev.throttle_est) / throttle_time_const_;
+
+        double throttle_est_next =
+            prev.throttle_est + throttle_dot * dt;
+
+        double thrust_est =
+            throttle_est_next * max_thrust_;
+
+        double mdot_est = thrust_est * throttle_cmd_sat;
+
+        x_hat.mass_est = std::max(dry_mass_, prev.mass_est - mdot_est * dt);
+        x_hat.throttle_est = throttle_est_next;
+
         return x_hat;
 
     }
@@ -150,6 +173,9 @@ private:
     std::shared_ptr<IGravityModel> gravity_;
     Mat<9,9> Q_;
     Mat<3,3> R_gps_;
+    double max_thrust_;
+    double throttle_time_const_;
+    double dry_mass_;
 };
 
 #endif //MISSILE6DOF_EKFNAVIGATION_H

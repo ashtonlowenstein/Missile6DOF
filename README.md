@@ -20,6 +20,8 @@ A modular 6-DOF rigid-body flight simulator written in C++, featuring:
     - EKF & dead reckoning navigation
     - attitude hold guidance
     - quaternion PD controller
+    - landing guidance
+    - inertial position/velocity PD controller
 - accelerometer and gyroscope model
 
 ## Project Structure
@@ -29,6 +31,7 @@ A modular 6-DOF rigid-body flight simulator written in C++, featuring:
 - `docs/`: design and validation notes
 
 ## Example Scenarios
+- `landing_test`: controlled vertical landing
 - `IMU_simple_thrust`: dead reckoning & thrust validation
 - `EKF_inertial_coords`: EKF validation
 - `attitude_hold`: closed-loop attitude stabilization

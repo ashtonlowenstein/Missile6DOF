@@ -10,7 +10,7 @@
 class IGuidanceModel {
 public:
     virtual ~IGuidanceModel() = default;
-    [[nodiscard]] virtual GuidanceCommand compute(double t, const NavigationState&) const = 0;
+    [[nodiscard]] virtual GuidanceCommand compute(double t, const NavigationState& nav) const = 0;
 };
 
 #endif //MISSILE6DOF_IGUIDANCEMODEL_H

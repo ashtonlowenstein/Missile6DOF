@@ -7,6 +7,7 @@
 #include <fstream>
 #include <stdexcept>
 #include "../../include/logging/CSVLogger.h"
+#include "MathTypes/RotationConversions.h"
 
 Simulator::Simulator(
     const MissileDynamics &dynamics,
@@ -53,7 +54,7 @@ const {
 
         ImuMeasurement sensors = imu_->measure(state, ctx, t);
         GpsMeasurement gps_measurement = gps_->measure(t, state).value();
-        nav = navigation_->estimate(t, dt_, state, nav, sensors, gps_measurement);
+        nav = navigation_->estimate(t, dt_, state, nav, sensors, cmd, gps_measurement);
 
         t += dt_;
     }
@@ -82,7 +83,7 @@ const {
         state = Integrator::rk4Step(dynamics_, t, dt_, state, cmd);
         ImuMeasurement sensors = imu_->measure(state, ctx, t);
         GpsMeasurement gps_measurement = gps_->measure(t, state).value();
-        nav = navigation_->estimate(t, dt_, state, nav, sensors, gps_measurement);
+        nav = navigation_->estimate(t, dt_, state, nav, sensors, cmd, gps_measurement);
 
         LogRecord rec = fillLogRecord(t, state, ds, cmd, ctx, nav, sensors);
 
@@ -110,12 +111,15 @@ LogRecord Simulator::fillLogRecord(
     rec.omega_body = state.omega_body;
     rec.omega_body_dot = ds.omega_dot;
     rec.mass = state.mass;
+    rec.mass_est = nav.mass_est;
 
     rec.pos_inertial_estimate = nav.pos_inertial;
     rec.vel_inertial_estimate = nav.vel_inertial;
     rec.q_bi_estimate = nav.q_BI;
     rec.omega_body_estimate = nav.omega_body;
 
+    Quaternion q = state.q_BI;
+    rec.tilt = std::acos( toRotationMatrix(q)(2,0) );
 
     rec.throttle_cmd = cmd.throttle_cmd;
     rec.throttle_actual = ctx.actuator_output.throttle;
@@ -145,6 +149,7 @@ LogRecord Simulator::fillLogRecord(
 
     rec.total_force_body = ctx.loads.total_force_body;
     rec.total_moment_body = ctx.loads.total_moment_body;
+    rec.total_force_inertial = ctx.loads.total_force_inertial;
 
     rec.Ixx = ctx.mass_properties.inertia_body(0,0);
     rec.Iyy = ctx.mass_properties.inertia_body(1,1);

@@ -19,6 +19,7 @@ public:
         const State& state,
         const NavigationState& prev,
         const ImuMeasurement& sensors,
+        const ControlCommand& last_cmd,
         const std::optional<GpsMeasurement>& gps
     ) const = 0;
 };

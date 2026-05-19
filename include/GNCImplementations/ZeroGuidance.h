@@ -17,7 +17,8 @@ public:
 
         (void)t; (void)nav;
 
-        return {Quaternion{}, Vec3{}, throttle_};
+        return {throttle_, Vec3{}, Vec3{},
+            Vec3{}, Quaternion{}, Vec3{}};
     }
 
 private:

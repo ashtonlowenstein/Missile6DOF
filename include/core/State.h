@@ -50,6 +50,10 @@ struct NavigationState {
     Vec3 gyro_bias_body{};
 
     Mat<9,9> P{};
+
+    double mass_est{0.0};
+    double throttle_est{0.0};
+
 };
 
 struct EkfNavigationState {
@@ -66,9 +70,12 @@ struct GpsMeasurement {
 };
 
 struct GuidanceCommand {
+    double throttle_cmd{0.0};
+    Vec3 accel_cmd_inertial{};
+    Vec3 pos_cmd_inertial{};
+    Vec3 vel_cmd_inertial{};
     Quaternion q_cmd_BI{};
     Vec3 omega_cmd_body{}; // rad/s
-    double throttle_cmd{0.0}; // [0,1]
 };
 
 struct ControlCommand {

@@ -18,6 +18,7 @@ public:
         const State& state,
         const NavigationState& prev,
         const ImuMeasurement& sensors,
+        const ControlCommand& last_cmd,
         const std::optional<GpsMeasurement>& gps
     ) const override {
         (void)t; (void)dt; (void) prev; (void)sensors; (void)gps;

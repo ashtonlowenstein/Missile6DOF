@@ -149,6 +149,15 @@ Mat<C,R> transpose(const Mat<R,C>& A) {
 }
 
 template <std::size_t N>
+double trace(const Mat<N,N>& A) {
+    double result = 0.0;
+    for (std::size_t i = 0; i < N; ++i) {
+        result += A(i,i);
+    }
+    return result;
+}
+
+template <std::size_t N>
 Mat<N,N> identity() {
     Mat<N,N> result{};
     for (std::size_t i = 0; i < N; ++i) {
@@ -319,28 +328,6 @@ bool isSymmetric(const Mat<N,N>& A, double tol = 1e-12) {
     }
 
     return true;
-}
-
-inline Vec3 toVec3(Mat<3,1>& A) {
-    return {
-        A(0,0),
-        A(1,0),
-        A(2,0)
-    };
-}
-
-inline Vec3 toVec3(Mat<1,3>& A) {
-    return {
-        A(0,0),
-        A(0,1),
-        A(0,2)
-    };
-}
-
-inline Mat<3,1> toVecXd(const Vec3& v) {
-    Mat<3,1> output{};
-    output(0,0) = v.x; output(1,0) = v.y; output(2,0) = v.z;
-    return output;
 }
 
 #endif //MISSILE6DOF_MATRIXXD_H

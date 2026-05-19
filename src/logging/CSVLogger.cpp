@@ -21,10 +21,11 @@ void CSVLogger::writeHeader() {
             << "vx_hat,vy_hat,vz_hat,"
             << "qw,qx,qy,qz,"
             << "qw_hat,qx_hat,qy_hat,qz_hat,"
+            << "tilt,"
             << "omega_x,omega_y,omega_z,"
             << "omegax_hat,omegay_hat,omegaz_hat,"
             << "omega_dot_x,omega_dot_y,omega_dot_z,"
-            << "mass,"
+            << "mass," << "mass_estimate,"
             << "throttle_cmd,throttle,"
             << "thrust,"
             << "gimbal_pitch_cmd,gimbal_pitch,"
@@ -32,12 +33,13 @@ void CSVLogger::writeHeader() {
             << "q_cmd_w,q_cmd_x,q_cmd_y,q_cmd_z,q_error_norm,"
             << "a_body_x,a_body_y,a_body_z,"
             << "a_body_bias_x,a_body_bias_y,a_body_bias_z,"
-            << "Fx,Fy,Fz,"
-            << "Mx,My,Mz,"
+            << "Fbody_x,Fbody_y,Fbody_z,"
+            << "Mbody_x,Mbody_y,Mbody_z,"
             << "mdot,"
             << "air_speed,alpha,beta,mach,qbar,"
             << "Ftot_x,Ftot_y,Ftot_z,"
             << "Mtot_x,Mtot_y,Mtot_z,"
+            << "Finert_x,Finert_y,Finert_z,"
             << "Ixx,Iyy,Izz\n";
 }
 
@@ -50,10 +52,11 @@ void CSVLogger::log(const LogRecord &r) {
             << r.vel_inertial_estimate.x << "," << r.vel_inertial_estimate.y << "," << r.vel_inertial_estimate.z << ","
             << r.q_bi.w << "," << r.q_bi.x << "," << r.q_bi.y << "," << r.q_bi.z << ","
             << r.q_bi_estimate.w << "," << r.q_bi_estimate.x << "," << r.q_bi_estimate.y << "," << r.q_bi_estimate.z << ","
+            << r.tilt << ","
             << r.omega_body.x << "," << r.omega_body.y << "," << r.omega_body.z << ","
             << r.omega_body_estimate.x << "," << r.omega_body_estimate.y << "," << r.omega_body_estimate.z << ","
             << r.omega_body_dot.x << "," << r.omega_body_dot.y << "," << r.omega_body_dot.z << ","
-            << r.mass << ","
+            << r.mass << "," << r.mass_est << ","
 
             << r.throttle_cmd << "," << r.throttle_actual << ","
             << r.thrust << ","
@@ -73,6 +76,7 @@ void CSVLogger::log(const LogRecord &r) {
 
             << r.total_force_body.x << "," << r.total_force_body.y << "," << r.total_force_body.z << ","
             << r.total_moment_body.x << "," << r.total_moment_body.y << "," << r.total_moment_body.z << ","
+            << r.total_force_inertial.x << "," << r.total_force_inertial.y << "," << r.total_force_inertial.z << ","
 
             << r.Ixx << "," << r.Iyy << "," << r.Izz
             << "\n";

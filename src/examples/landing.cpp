@@ -1,5 +1,5 @@
 #include <iostream>
-
+#include <sstream>
 #include "../include/ModelImplementations/ConstantAtmosphere.h"
 #include "../include/ModelImplementations/ZeroAeroModel.h"
 #include "../include/MathTypes/Vec3.h"
@@ -11,26 +11,24 @@
 #include "../include/ModelImplementations/SimpleRocketMassPropertiesModel.h"
 #include "../include/ModelImplementations/ConstantGravityModel.h"
 #include "sensors/IdealImuModel.h"
-#include "../include/GNCImplementations/ZeroControl.h"
 #include "GNCImplementations/EKFNavigation.h"
-#include "ModelImplementations/ZeroPropulsionModel.h"
-#include "GNCImplementations/ZeroGuidance.h"
+#include "GNCImplementations/LandingGuidance.h"
+#include "GNCImplementations/PDLandingController.h"
 #include "MathTypes/MatrixXd.h"
-#include "sensors/BiasedImuModel.h"
+#include "ModelImplementations/SimpleGimbaledPropulsionModel.h"
 #include "sensors/IdealGpsModel.h"
-#include "sensors/NoisyGpsModel.h"
 #include "sensors/NoisyImuModel.h"
 
 int main() {
     State s0{};
 
-    s0.pos_inertial = Vec3{0.0, 0.0, 100.0};
-    s0.vel_inertial = Vec3{0.0, 0.0, 0.0};
+    s0.pos_inertial = Vec3{1.0, 0.0, 100.0};
+    s0.vel_inertial = Vec3{0.0, 0.0, -10.0};
 
-    s0.q_BI = Quaternion{1.0, 0.0, 0.0, 0.0};
+    s0.q_BI = Quaternion{std::sqrt(0.5), 0.0, -std::sqrt(0.5), 0.0};
     s0.omega_body = Vec3{0.0, 0.0, 0.0};
 
-    s0.mass = 50.0;  // kg, example wet-ish mass
+    s0.mass = 10.0;  // kg, example wet-ish mass
 
     s0.actuators.throttle = 0.0;
     s0.actuators.gimbal_pitch = 0.0;
@@ -52,24 +50,33 @@ int main() {
     auto actuator_model = std::make_unique<SimpleActuatorModel>(actuator_params);
 
     SimpleRocketMassPropertiesModel mass_properties(
-        30.0,
-        50.0,
+        5.0,
+        5.0,
         Mat3::diagonal(5.0, 12.0, 12.0),
         Mat3::diagonal(8.0, 20.0, 20.0),
         {0.0, 0.0, 0.0},
         {0.0, 0.0, 0.0});
     auto mass_model = std::make_unique<SimpleRocketMassPropertiesModel>(mass_properties);
 
-    // Propulsion models (one for zero propulsion and one for constant)
-    auto propulsion_model = std::make_unique<ZeroPropulsionModel>();
+    //Propulsion
+    double max_thrust = 250.0;
+    auto propulsion_model = std::make_unique<SimpleGimbaledPropulsionModel>(
+        max_thrust,
+        200.0,
+        Vec3{-1.0, 0.0, 0.0},
+        5.0
+    );
 
-    const Vec3 accel_bias = Vec3{0.05, -0.02, 0.03};
-    const Vec3 gyro_bias{};
-    double sigma_accel = 0.05;
-    double sigma_gyro = 0.001;
-    auto sensors = std::make_unique<NoisyImuModel>(accel_bias, gyro_bias, sigma_accel, sigma_gyro);
+    auto sensors = std::make_unique<IdealImuModel>();
 
-    auto guidance = std::make_unique<ZeroGuidance>(0.0);
+    const Vec3 target_pos{0.0, 0.0, 0.0};
+    const Vec3 target_vel{0.0, 0.0, 0.0};
+    const Quaternion target_q_BI{std::sqrt(0.5), 0.0, -std::sqrt(0.5), 0.0};
+    auto guidance = std::make_unique<LandingGuidance>(
+        target_pos,
+        target_vel,
+        target_q_BI
+    );
 
     Mat<9,9> Q = zeros<9,9>();
 
@@ -80,11 +87,10 @@ int main() {
         Q(6+i, 6+i) = sigma_bias_rw * sigma_bias_rw * 0.01;
     }
     double sigma_gps = 0.5;
-    auto gps_model = std::make_unique<NoisyGpsModel>(sigma_gps);
+    auto gps_model = std::make_unique<IdealGpsModel>();
     Mat<3,3> R_gps = identity<3>() * (sigma_gps * sigma_gps);
-    auto navigation = std::make_unique<EkfNavigation>(gravity, Q, R_gps, 0.0, 0.0, 0.0);
 
-    auto controller = std::make_unique<ZeroControl>();
+    auto navigation = std::make_unique<EkfNavigation>(gravity, Q, R_gps, max_thrust, 0.2, 10.0);
 
     MissileDynamics dynamics(
         std::move(gravity),
@@ -95,6 +101,15 @@ int main() {
         std::move(actuator_model)
     );
 
+    double kpt_z = 0.3;
+    double kpt_xy = 0.09;
+    double kdt_z = 1.25;
+    double kdt_xy = 2.5;
+    double kpr = 0.2;
+    double kdr = 0.05;
+
+    auto controller = std::make_unique<PDLandingController>(kpt_xy, kpt_z, kdt_xy, kdt_z, kpr, kdr, max_thrust);
+
     const Simulator sim(
         dynamics,
         std::move(sensors),
@@ -103,15 +118,28 @@ int main() {
         std::move(navigation),
         std::move(controller),
         0.01,
-        25.0);
+        30.0);
 
     try {
-        State final_State = sim.run(s0, "/Users/ashtonlowenstein/CLionProjects/Missile6DOF/EKF_inertial.csv");
-        std::cout << "Simulation complete. Output written to output/sim.csv\n";
+        // std::ostringstream oss;
+        //
+        // oss << std::fixed << std::setprecision(2)
+        //     << "../view_"
+        //     << "landing"
+        //     << "_kpt_xy_" << kpt_xy
+        //     << "_kpt_z_" << kpt_z
+        //     << "_kdt_xy_" << kdt_xy
+        //     << "_kdt_z_" << kdt_z
+        //     << "_kpr_" << kpr
+        //     << "_kdr_" << kdr
+        //     << ".csv";
+
+        //std::string filename = oss.str();
+        std::string filename = "../landing_test.csv";
+        State final_State = sim.run(s0, filename);
+        //std::cout << "Simulation complete. Output written to output/sim.csv\n";
     } catch (const std::exception& e) {
         std::cerr << "Simulation failed: " << e.what() << "\n";
         return 1;
     }
-
-    return 0;
 }

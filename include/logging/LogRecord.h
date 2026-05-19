@@ -16,7 +16,10 @@ struct LogRecord {
     Vec3 omega_body{};
     Vec3 omega_body_dot{};
 
+    double tilt{0.0};
+
     double mass{0.0};
+    double mass_est{0.0};
 
     Vec3 pos_inertial_estimate{};
     Vec3 vel_inertial_estimate{};
@@ -54,6 +57,7 @@ struct LogRecord {
     // totals
     Vec3 total_force_body{};
     Vec3 total_moment_body{};
+    Vec3 total_force_inertial{};
 
     // inertia (just diagonal for now)
     double Ixx{0.0}, Iyy{0.0}, Izz{0.0};

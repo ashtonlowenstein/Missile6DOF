@@ -11,6 +11,8 @@ add_library(sim_core
         src/MathTypes/Vec3.cpp
         include/MathTypes/Vec3.h
         include/MathTypes/MatrixXd.h
+        include/MathTypes/RotationConversions.h
+        src/MathTypes/RotationConversions.cpp
         include/ModelInterfaces/IAtmosphere.h
         src/dynamics/MissileDynamics.cpp
         include/dynamics/MissileDynamics.h
@@ -50,6 +52,8 @@ add_library(sim_core
         include/GNCImplementations/PDAttitudeController.h
         include/GNCImplementations/ImuNavigation.h
         include/GNCImplementations/EKFNavigation.h
+        include/GNCImplementations/LandingGuidance.h
+        include/GNCImplementations/PDLandingController.h
         include/sensors/IImuModel.h
         include/sensors/IdealImuModel.h
         include/sensors/BiasedImuModel.h
@@ -83,6 +87,12 @@ target_link_libraries(linear_algebra PUBLIC sim_core)
 
 add_executable(ekf_inertial src/examples/EKF_inertial_coords.cpp)
 target_link_libraries(ekf_inertial PUBLIC sim_core)
+
+add_executable(landing_sweep src/examples/landing_gain_sweep.cpp)
+target_link_libraries(landing_sweep PUBLIC sim_core)
+
+add_executable(landing src/examples/landing.cpp)
+target_link_libraries(landing PUBLIC sim_core)
 
 #TESTs
 
