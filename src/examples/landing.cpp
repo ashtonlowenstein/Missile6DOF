@@ -13,6 +13,7 @@
 #include "sensors/IdealImuModel.h"
 #include "GNCImplementations/EKFNavigation.h"
 #include "GNCImplementations/LandingGuidance.h"
+#include "GNCImplementations/NavigationTruthModel.h"
 #include "GNCImplementations/PDLandingController.h"
 #include "MathTypes/MatrixXd.h"
 #include "ModelImplementations/SimpleGimbaledPropulsionModel.h"
@@ -22,7 +23,7 @@
 int main() {
     State s0{};
 
-    s0.pos_inertial = Vec3{1.0, 0.0, 100.0};
+    s0.pos_inertial = Vec3{-1.0, 1.0, 100.0};
     s0.vel_inertial = Vec3{0.0, 0.0, -10.0};
 
     s0.q_BI = Quaternion{std::sqrt(0.5), 0.0, -std::sqrt(0.5), 0.0};
@@ -60,10 +61,11 @@ int main() {
 
     //Propulsion
     double max_thrust = 250.0;
+    double lever_arm = 1.0;
     auto propulsion_model = std::make_unique<SimpleGimbaledPropulsionModel>(
         max_thrust,
         200.0,
-        Vec3{-1.0, 0.0, 0.0},
+        Vec3{-lever_arm, 0.0, 0.0},
         5.0
     );
 
@@ -91,6 +93,7 @@ int main() {
     Mat<3,3> R_gps = identity<3>() * (sigma_gps * sigma_gps);
 
     auto navigation = std::make_unique<EkfNavigation>(gravity, Q, R_gps, max_thrust, 0.2, 10.0);
+    //auto navigation = std::make_unique<NavigationTruthModel>();
 
     MissileDynamics dynamics(
         std::move(gravity),
@@ -101,14 +104,16 @@ int main() {
         std::move(actuator_model)
     );
 
-    double kpt_z = 0.3;
-    double kpt_xy = 0.09;
-    double kdt_z = 1.25;
-    double kdt_xy = 2.5;
-    double kpr = 0.2;
-    double kdr = 0.05;
+    LandingGains landing_gains{
+        .kp_trans_xy = 0.7375,
+        .kp_trans_z = 0.6,
+        .kd_trans_xy = 1.875,
+        .kd_trans_z = 1.25,
+        .kp_rot = 0.35,
+        .kd_rot = 2.925
+    };
 
-    auto controller = std::make_unique<PDLandingController>(kpt_xy, kpt_z, kdt_xy, kdt_z, kpr, kdr, max_thrust);
+    auto controller = std::make_unique<PDLandingController>(landing_gains, max_thrust, lever_arm, actuator_params);
 
     const Simulator sim(
         dynamics,
@@ -118,7 +123,7 @@ int main() {
         std::move(navigation),
         std::move(controller),
         0.01,
-        30.0);
+        10.0);
 
     try {
         // std::ostringstream oss;

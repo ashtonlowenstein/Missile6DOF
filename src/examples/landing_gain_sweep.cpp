@@ -27,12 +27,14 @@ int main() {
     // double kp_rot = 0.1;
     // double kd_rot = 0.1;
 
-    std::vector kpt_xys = {0.05 * 0.3, 0.1 * 0.3, 0.15 * 0.3, 0.2 * 0.3, 0.25 * 0.3, 0.3 * 0.3};
-    std::vector kpt_zs = {0.3};
-    std::vector kdt_xys = {0.5 * 1.25, 1.0 * 1.25, 1.5 * 1.25, 2.0 * 1.25};
+    std::vector kpt_xys = {0.5, 0.6, 0.7, 0.7375};
+    std::vector kpt_zs = {0.6};
+    std::vector kdt_xys = {1.875, 1.9, 1.95, 2.0, 2.25, 2.5};
     std::vector kdt_zs = {1.25};
-    std::vector kprs = {0.05, 0.1, 0.15, 0.2, 0.25};
-    std::vector kdrs = {0.05, 0.1, 0.15, 0.2, 0.25};
+    std::vector kprs = {0.1, 0.2, 0.3, 0.35, 0.4, 0.5, 0.6, 0.7, 0.8};
+    std::vector kdrs = {1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.925};
+
+    LandingGains gains{};
 
     for (auto kpt_xy : kpt_xys) {
         for (auto kpt_z : kpt_zs) {
@@ -40,9 +42,16 @@ int main() {
                 for (auto kdt_z : kdt_zs) {
                     for (auto kpr : kprs) {
                         for (auto kdr : kdrs) {
+                            gains.kp_trans_xy = kpt_xy;
+                            gains.kp_trans_z = kpt_z;
+                            gains.kd_trans_xy = kdt_xy;
+                            gains.kd_trans_z = kdt_z;
+                            gains.kp_rot = kpr;
+                            gains.kd_rot = kdr;
+
                             State s0{};
 
-                            s0.pos_inertial = Vec3{1.0, 0.0, 100.0};
+                            s0.pos_inertial = Vec3{0.0, 1.0, 100.0};
                             s0.vel_inertial = Vec3{0.0, 0.0, -10.0};
 
                             s0.q_BI = Quaternion{std::sqrt(0.5), 0.0, -std::sqrt(0.5), 0.0};
@@ -80,13 +89,15 @@ int main() {
 
                             //Propulsion
                             double max_thrust = 250.0;
+                            double lever_arm = 1.0;
                             auto propulsion_model = std::make_unique<SimpleGimbaledPropulsionModel>(
                                 max_thrust,
                                 200.0,
-                                Vec3{-1.0, 0.0, 0.0},
+                                Vec3{-lever_arm, 0.0, 0.0},
                                 5.0
                             );
 
+                            //Sensors
                             auto sensors = std::make_unique<IdealImuModel>();
 
                             const Vec3 target_pos{0.0, 0.0, 0.0};
@@ -98,6 +109,7 @@ int main() {
                                 target_q_BI
                             );
 
+                            //EKF
                             Mat<9,9> Q = zeros<9,9>();
 
                             for (int i = 0; i < 3; ++i) {
@@ -120,7 +132,8 @@ int main() {
                                 std::move(mass_model),
                                 std::move(actuator_model)
                             );
-                            auto controller = std::make_unique<PDLandingController>(kpt_xy, kpt_z, kdt_xy, kdt_z, kpr, kdr, max_thrust);
+                            auto controller = std::make_unique<PDLandingController>(
+                                gains, max_thrust, lever_arm, actuator_params);
 
                             const Simulator sim(
                                 dynamics,
@@ -135,7 +148,7 @@ int main() {
                             try {
                                 std::ostringstream oss;
 
-                                oss << std::fixed << std::setprecision(2)
+                                oss << std::fixed << std::setprecision(4)
                                     << "../landing_tuning/runs/"
                                     << "landing"
                                     << "_kpt_xy_" << kpt_xy
@@ -147,7 +160,7 @@ int main() {
                                     << ".csv";
 
                                 std::string filename = oss.str();
-                                State final_State = sim.run(s0, filename);
+                                State final_State = sim.run_gain_tuning(s0, filename);
                                 //std::cout << "Simulation complete. Output written to output/sim.csv\n";
                             } catch (const std::exception& e) {
                                 std::cerr << "Simulation failed: " << e.what() << "\n";

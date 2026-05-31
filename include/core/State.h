@@ -57,11 +57,11 @@ struct NavigationState {
 };
 
 struct EkfNavigationState {
-    Vec3 pos_inertial;
-    Vec3 vel_inertial;
-    Quaternion q_BI;        // use propagated/known attitude for now
-    Vec3 accel_bias_body;
-    Mat<9, 9> P;
+    Vec3 pos_inertial{};
+    Vec3 vel_inertial{};
+    Quaternion q_BI{};        // use propagated/known attitude for now
+    Vec3 accel_bias_body{};
+    Mat<9, 9> P{};
 };
 
 struct GpsMeasurement {
@@ -80,9 +80,18 @@ struct GuidanceCommand {
 
 struct ControlCommand {
     double throttle_cmd{0.0}; // [0,1]
+
     double gimbal_pitch_cmd{0.0}; // rad
+    double raw_gimbal_pitch_cmd{0.0};
+    double raw_filtered_gimbal_pitch_cmd{0.0};
+
     double gimbal_yaw_cmd{0.0}; // rad
+    double raw_gimbal_yaw_cmd{0.0};
+    double raw_filtered_gimbal_yaw_cmd{0.0};
+
     bool engine_enable_cmd{false};
+    Quaternion q_err{};
+    Vec3 tau_cmd{};
 };
 
 struct ActuatorOutput {

@@ -5,6 +5,8 @@ from pathlib import Path
 def score_run(path):
     df = pd.read_csv(path)
 
+    df.dropna()
+
     idx = df["z"].abs().idxmin()
     row = df.loc[idx]
 
@@ -23,14 +25,15 @@ def score_run(path):
     score = (
             100.0 * abs(row["z"]) +
             50.0  * abs(row["vz"]) +
-            20.0  * xy_err +
+            50.0  * xy_err +
+            50.0 * speed_err +
             5.0   * max_gimbal +
             crash_penalty
     )
 
     return {
         "file": path.name,
-        "t_best": row["t"],
+        #"t_best": row["t"],
         "z_best": row["z"],
         "vz_best": row["vz"],
         "xy_err": xy_err,
@@ -41,9 +44,10 @@ def score_run(path):
     }
 
 RUN_DIR = Path.cwd()
-csv_files = sorted(RUN_DIR.rglob("*.csv"))
+TUNING_RUN_DIR = Path(str(RUN_DIR) + "/runs")
+csv_files = sorted(TUNING_RUN_DIR.rglob("*.csv"))
 rows = [score_run(p) for p in csv_files]
 summary = pd.DataFrame(rows).sort_values("score")
 
-summary.to_csv(Path(str(RUN_DIR) + "/landing_gain_summary_1.csv"), index=False)
+summary.to_csv(Path(str(RUN_DIR) + "/landing_gain_summary_13.csv"), index=False)
 print(summary.head(10))

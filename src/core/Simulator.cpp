@@ -7,6 +7,7 @@
 #include <fstream>
 #include <stdexcept>
 #include "../../include/logging/CSVLogger.h"
+#include "logging/GainTuningCSVLogger.h"
 #include "MathTypes/RotationConversions.h"
 
 Simulator::Simulator(
@@ -40,6 +41,7 @@ State Simulator::run(
 const {
     State state = initial_state;
     NavigationState nav = navigation_->initializeFromTruth(state);
+    ControlCommand cmd{};
     double t = 0.0;
 
     while (t <= t_end_) {
@@ -47,7 +49,7 @@ const {
 
         GuidanceCommand guid = guidance_->compute(t, nav);
 
-        ControlCommand cmd = controller_->compute(t, nav, guid);
+        cmd = controller_->compute(t, dt_, nav, guid, state, cmd);
 
         const DynamicsContext ctx = dynamics_.evaluate(t, state, cmd);
         state = Integrator::rk4Step(dynamics_, t, dt_, state, cmd);
@@ -69,13 +71,48 @@ const {
 
     State state = initial_state;
     NavigationState nav = navigation_->initializeFromTruth(state);
+    ControlCommand cmd{};
     double t = 0.0;
 
     while (t <= t_end_) {
 
         GuidanceCommand guid = guidance_->compute(t, nav);
 
-        ControlCommand cmd = controller_->compute(t, nav, guid);
+        cmd = controller_->compute(t, dt_, nav, guid, state, cmd);
+
+        const DynamicsContext ctx = dynamics_.evaluate(t, state, cmd);
+        const Derivative ds = dynamics_.derivatives(t, state, cmd);
+
+        state = Integrator::rk4Step(dynamics_, t, dt_, state, cmd);
+        ImuMeasurement sensors = imu_->measure(state, ctx, t);
+        GpsMeasurement gps_measurement = gps_->measure(t, state).value();
+        nav = navigation_->estimate(t, dt_, state, nav, sensors, cmd, gps_measurement);
+
+        LogRecord rec = fillLogRecord(t, state, ds, cmd, ctx, nav, sensors);
+
+        logger.log(rec);
+
+        t += dt_;
+    }
+    return state;
+}
+
+State Simulator::run_gain_tuning(
+    const State &initial_state,
+    const std::string &output_path)
+const {
+    GainTuningCSVLogger logger(output_path);
+
+    State state = initial_state;
+    NavigationState nav = navigation_->initializeFromTruth(state);
+    ControlCommand cmd{};
+    double t = 0.0;
+
+    while (t <= t_end_) {
+
+        GuidanceCommand guid = guidance_->compute(t, nav);
+
+        cmd = controller_->compute(t, dt_, nav, guid, state, cmd);
 
         const DynamicsContext ctx = dynamics_.evaluate(t, state, cmd);
         const Derivative ds = dynamics_.derivatives(t, state, cmd);
@@ -124,6 +161,7 @@ LogRecord Simulator::fillLogRecord(
     rec.throttle_cmd = cmd.throttle_cmd;
     rec.throttle_actual = ctx.actuator_output.throttle;
 
+    rec.raw_gimbal_pitch_cmd = cmd.raw_gimbal_pitch_cmd;
     rec.gimbal_pitch_cmd = cmd.gimbal_pitch_cmd;
     rec.gimbal_pitch_actual = ctx.actuator_output.gimbal_pitch;
 
@@ -132,6 +170,8 @@ LogRecord Simulator::fillLogRecord(
 
     rec.q_cmd = guidance_->compute(t, nav).q_cmd_BI;
     rec.q_error_norm = norm(toVector(rec.q_cmd * state.q_BI.conjugate()));
+    rec.q_err = cmd.q_err;
+    rec.tau_cmd = cmd.tau_cmd;
 
     rec.accel_body = measurement.accel_body;
     rec.accel_body_bias = nav.accel_bias_body;

@@ -33,6 +33,10 @@ public:
         const State &initial_state,
         const std::string &output_path) const;
 
+    [[nodiscard]] State run_gain_tuning(
+        const State &initial_state,
+        const std::string &output_path) const;
+
 private:
     const MissileDynamics& dynamics_;
     std::unique_ptr<IImuModel> imu_;

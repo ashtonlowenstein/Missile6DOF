@@ -1,0 +1,9 @@
+kp_trans_xy = 0.5
+kp_trans_z = 0.6
+
+kd_trans_xy = 2.5
+kd_trans_z = 1.25
+
+kp_rot = 0.1
+
+kd_rot = 2.925

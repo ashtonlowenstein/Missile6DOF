@@ -28,18 +28,24 @@ struct LogRecord {
 
     Quaternion q_cmd{};
     double q_error_norm{0.0};
+    Quaternion q_err{};
+    Vec3 tau_cmd{};
 
     // actuator
     double throttle_cmd{0.0};
     double throttle_actual{0.0};
-    double gimbal_pitch_cmd{0.0};
-    double gimbal_pitch_actual{0.0};
-    double gimbal_yaw_cmd{0.0};
-    double gimbal_yaw_actual{0.0};
+
+    double raw_gimbal_pitch_cmd{0.0};
+    double gimbal_pitch_cmd{0.0}; // from controller
+    double gimbal_pitch_actual{0.0}; // actuator output
+
+    double gimbal_yaw_cmd{0.0}; // from controller
+    double gimbal_yaw_actual{0.0}; // actuator output
 
     // sensor reading
     Vec3 accel_body{};
     Vec3 accel_body_bias{};
+    Vec3 gyro_body_bias{};
 
     // propulsion
     Vec3 thrust_force_body{};

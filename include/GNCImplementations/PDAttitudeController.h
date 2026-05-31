@@ -16,8 +16,12 @@ public:
 
     [[nodiscard]] ControlCommand compute(
         double,
+        double,
         const NavigationState& nav,
-        const GuidanceCommand& guid)
+        const GuidanceCommand& guid,
+        const State& truth,
+        const ControlCommand& prev_cmd
+        )
     const override {
 
         const Quaternion& q = nav.q_BI;

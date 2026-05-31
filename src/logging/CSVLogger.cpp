@@ -28,9 +28,11 @@ void CSVLogger::writeHeader() {
             << "mass," << "mass_estimate,"
             << "throttle_cmd,throttle,"
             << "thrust,"
-            << "gimbal_pitch_cmd,gimbal_pitch,"
+            << "raw_gimbal_pitch_cmd,gimbal_pitch_cmd,actual_gimbal_pitch,"
             << "gimbal_yaw_cmd,gimbal_yaw,"
             << "q_cmd_w,q_cmd_x,q_cmd_y,q_cmd_z,q_error_norm,"
+            << "q_err_w,q_err_x,q_err_y,q_err_z,"
+            << "tau_cmd_x,tau_cmd_y,tau_cmd_z,"
             << "a_body_x,a_body_y,a_body_z,"
             << "a_body_bias_x,a_body_bias_y,a_body_bias_z,"
             << "Fbody_x,Fbody_y,Fbody_z,"
@@ -60,10 +62,13 @@ void CSVLogger::log(const LogRecord &r) {
 
             << r.throttle_cmd << "," << r.throttle_actual << ","
             << r.thrust << ","
-            << r.gimbal_pitch_cmd << "," << r.gimbal_pitch_actual << ","
+            << r.raw_gimbal_pitch_cmd << "," << r.gimbal_pitch_cmd << "," << r.gimbal_pitch_actual << ","
             << r.gimbal_yaw_cmd << "," << r.gimbal_yaw_actual << ","
 
             << r.q_cmd.w << "," << r.q_cmd.x << "," << r.q_cmd.y << "," << r.q_cmd.z << "," << r.q_error_norm << ","
+
+            << r.q_err.w << "," << r.q_err.x << "," << r.q_err.y << "," << r.q_err.z << ","
+            << r.tau_cmd.x << "," << r.tau_cmd.y << "," << r.tau_cmd.z << ","
 
             << r.accel_body.x << "," << r.accel_body.y << "," << r.accel_body.z << ","
             << r.accel_body_bias.x << "," << r.accel_body_bias.y << "," << r.accel_body_bias.z << ","

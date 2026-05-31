@@ -42,6 +42,8 @@ add_library(sim_core
         src/logging/CSVLogger.cpp
         include/logging/CSVLogger.h
         include/logging/LogRecord.h
+        include/logging/GainTuningCSVLogger.h
+        src/logging/GainTuningCSVLogger.cpp
         include/ModelImplementations/ZeroPropulsionModel.h
         include/ModelImplementations/ConstantGravityModel.h
         include/GNCInterfaces/INavigationModel.h

@@ -50,11 +50,10 @@ public:
         NavigationState prediction = prev;
 
         // 1. Bias-correct IMU
-        const Vec3 omega_body =
-            imu.gyro_body - prev.gyro_bias_body;
+        const Vec3 omega_body = imu.gyro_body;// - prev.gyro_bias_body;
 
         const Vec3 specific_force_body =
-            imu.accel_body - prev.accel_bias_body;
+            imu.accel_body;// - prev.accel_bias_body;
 
         // 2. Propagate attitude, same as ImuNavigation
         const Quaternion omega_q = toQuaternion(omega_body);

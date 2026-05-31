@@ -13,8 +13,12 @@ public:
 
     [[nodiscard]] virtual ControlCommand compute(
         double t,
+        double dt,
         const NavigationState& nav,
-        const GuidanceCommand& guid) const = 0;
+        const GuidanceCommand& guid,
+        const State& truth,
+        const ControlCommand& prev_cmd
+        ) const = 0;
 };
 
 #endif //MISSILE6DOF_ICONTROLLERMODEL_H
