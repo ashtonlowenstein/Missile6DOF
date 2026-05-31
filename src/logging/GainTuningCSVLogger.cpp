@@ -14,17 +14,24 @@ GainTuningCSVLogger::GainTuningCSVLogger(const std::string &filename) {
 
 void GainTuningCSVLogger::writeHeader() {
     file_
+        << "t,"
         << "x,y,z,"
         << "vx,vy,vz,"
         << "tilt,"
-        << "gimbal_pitch_cmd,gimbal_yaw_cmd\n";
+        << "gimbal_pitch_cmd,gimbal_yaw_cmd,"
+        << "gimbal_pitch,gimbal_yaw,"
+        << "throttle_cmd,throttle"
+        << "\n";
 }
 
 void GainTuningCSVLogger::log(const LogRecord &r) {
     file_
+        << r.t << ","
         << r.pos_inertial.x << "," << r.pos_inertial.y << "," << r.pos_inertial.z << ","
         << r.vel_inertial.x << "," << r.vel_inertial.y << "," << r.vel_inertial.z << ","
         << r.tilt << ","
-        << r.gimbal_pitch_cmd << "," << r.gimbal_yaw_cmd
+        << r.gimbal_pitch_cmd << "," << r.gimbal_yaw_cmd << ","
+        << r.gimbal_pitch_actual << "," << r.gimbal_yaw_actual << ","
+        << r.throttle_cmd << "," << r.throttle_actual
         << "\n";
 }

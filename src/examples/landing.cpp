@@ -105,11 +105,11 @@ int main() {
     );
 
     LandingGains landing_gains{
-        .kp_trans_xy = 0.7375,
+        .kp_trans_xy = 0.5,
         .kp_trans_z = 0.6,
-        .kd_trans_xy = 1.875,
+        .kd_trans_xy = 2.5,
         .kd_trans_z = 1.25,
-        .kp_rot = 0.35,
+        .kp_rot = 0.1,
         .kd_rot = 2.925
     };
 
@@ -141,7 +141,7 @@ int main() {
 
         //std::string filename = oss.str();
         std::string filename = "../landing_test.csv";
-        State final_State = sim.run(s0, filename);
+        State final_State = sim.run_gain_tuning(s0, filename);
         //std::cout << "Simulation complete. Output written to output/sim.csv\n";
     } catch (const std::exception& e) {
         std::cerr << "Simulation failed: " << e.what() << "\n";
